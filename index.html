@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Anlageplanung V4.3.3.7</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles_v4.3.3.7.css">
+
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+
+<body>
+    <header class="mlp-header">
+        <div class="header-container">
+            <div class="header-title-row">
+                <div>
+                    <h1>Robustes Portfolio</h1>
+                    <p class="subtitle">Strategie schlägt Zufall – Ihr Zeitphasenmodell nach Managementansätzen</p>
+                </div>
+                <button id="help-btn" class="btn-help" title="Benutzerhandbuch öffnen" aria-label="Hilfe">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Hilfe
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Two-column app layout: Dashboard + Portfolio Panel -->
+    <div class="app-layout">
+
+        <!-- LEFT: Main Dashboard -->
+        <main class="dashboard-column">
+            <div class="content-container">
+
+                <section class="intro-section">
+                    <p class="intro-text">
+                        Ein Vermögensaufbau erfordert eine strukturierte Zuordnung von Kapital in unterschiedliche
+                        Anlageklassen
+                        und Strategien, abhängig von Ihrem persönlichen Anlagehorizont (Zeitphasen).
+                    </p>
+                </section>
+
+                <!-- The Interactive Matrix -->
+                <section class="portfolio-matrix">
+                    <div class="matrix-header">
+                        <h2>Zeitphasen und Zielzeiträume</h2>
+                        <p>Klicken Sie auf eine Zeitphase, um die passenden Managementansätze und Anlageklassen im
+                            Portfolio
+                            hervorzuheben.</p>
+                        <div class="fund-search-container" style="position: relative; margin-top: 15px;">
+                            <input type="text" id="fund-search-input" placeholder="Nach Fonds oder WKN suchen..." autocomplete="off">
+                            <ul id="fund-search-results" class="search-results-popup"></ul>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Navigation -->
+                    <div class="timeline-nav" id="timeline-container">
+                        <!-- Javascript will populate timeline buttons -->
+                    </div>
+
+                    <!-- Interactive Row: Tower & Detail Card & Finance Panel -->
+                    <div class="phase-interaction-area">
+
+                        <div class="tower-wrapper">
+                            <h3>Managementansätze</h3>
+                            <!-- V4 Layout: Main Tower + Side Tower -->
+                            <div class="tower-layout-wrapper">
+                                <!-- Main Tower -->
+                                <div class="management-tower" id="tower-container">
+                                    <!-- Layer DOM elements will be injected via JS -->
+                                </div>
+
+                                <!-- Side Tower for Tagesgeld -->
+                                <div class="side-tower-container" id="side-tower-container">
+                                    <!-- Tagesgeld element will be injected here via JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Phase Info -->
+                        <div class="phase-detail-card" id="phase-detail-card">
+                            <div class="phase-header">
+                                <h3 id="detail-phase-name">Alle Phasen anzeigen</h3>
+                            </div>
+                            <div class="phase-content">
+                                <div class="detail-group">
+                                    <span class="detail-label">Zielzeitraum:</span>
+                                    <span class="detail-value" id="detail-duration">Gesamter Anlagehorizont</span>
+                                </div>
+                                <div class="detail-group">
+                                    <span class="detail-label">Anlageklasse:</span>
+                                    <span class="detail-value" id="detail-asset-class">Alle verfügbaren
+                                        Anlageklassen</span>
+                                </div>
+                            </div>
+
+                            <p class="hinweis-text" style="font-size: 0.9rem; color: #666; margin-top: 20px;">
+                                Wählen Sie oben eine Zeitphase aus, um die zugehörigen Managementansätze –
+                                passend zum VEM-Profil – im Robusten Portfolio farblich hervorzuheben.
+                            </p>
+                        </div>
+
+                        <!-- Right: Financial Overview -->
+                        <div class="finance-overview-card phase-detail-card">
+                            <h2>Anlageplanung</h2>
+
+                            <div class="finance-input-group">
+                                <label for="total-investment-input">Anzulegendes Gesamtvermögen:</label>
+                                <div class="currency-input-wrapper">
+                                    <input type="text" id="total-investment-input" placeholder="0,00"
+                                        inputmode="decimal">
+                                    <span class="currency-symbol">€</span>
+                                </div>
+                            </div>
+
+                            <!-- NEU V4.3.1 Sparrate -->
+                            <div class="finance-input-group" style="margin-top: 15px;">
+                                <label for="total-investment-sparrate">Anzulegende Sparrate monatlich:</label>
+                                <div class="currency-input-wrapper">
+                                    <input type="text" id="total-investment-sparrate" placeholder="0,00"
+                                        inputmode="decimal">
+                                    <span class="currency-symbol">€</span>
+                                </div>
+                            </div>
+
+                            <div class="finance-summary">
+                                <div class="finance-row">
+                                    <span>Einmal Verplant:</span>
+                                    <span id="total-distributed-display" class="finance-value">0,00 €</span>
+                                </div>
+                                <div class="finance-row highlight-remaining">
+                                    <span>Einmal Verbleibend:</span>
+                                    <span id="total-remaining-display" class="finance-value">0,00 €</span>
+                                </div>
+
+                                <!-- NEU V4.3.1 Sparrate Summary -->
+                                <div class="finance-row"
+                                    style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 10px;">
+                                    <span>Sparrate Verplant:</span>
+                                    <span id="sparrate-distributed-display" class="finance-value">0,00 €</span>
+                                </div>
+                                <div class="finance-row highlight-remaining">
+                                    <span>Sparrate Verbleibend:</span>
+                                    <span id="sparrate-remaining-display" class="finance-value">0,00 €</span>
+                                </div>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="print-overall-container"
+                                style="margin-top: 20px; display:flex; gap:10px; align-items:center; justify-content:flex-end; border-top: 1px solid #eee; padding-top: 15px; flex-wrap:wrap;">
+                                <button id="crawler-btn" class="btn btn-crawler" title="Ländergewichtungen von Fondsgesellschaften abrufen">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                    Länder aktualisieren
+                                </button>
+                                <button id="print-overall-btn" class="btn btn-primary" title="Gesamtübersicht drucken">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                                    Drucken
+                                </button>
+                            </div>
+                        </div>
+                    </div><!-- end .phase-interaction-area -->
+
+                    <!-- ── V4.3.3.6 Info-Bar: Schicht + Länderverteilung nach 6 Regionen ── -->
+                    <div class="portfolio-info-bar" id="portfolio-info-bar" style="display:none;">
+                        <!-- Linke Spalte: Verteilung nach Schicht -->
+                        <div class="info-bar-card">
+                            <h3 class="info-bar-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg>
+                                Verteilung nach Schicht
+                            </h3>
+                            <ul id="layer-breakdown-list">
+                                <li class="empty-breakdown">Noch keine Beträge zugewiesen</li>
+                            </ul>
+                        </div>
+
+                        <!-- Rechte Spalte: Länderverteilung -->
+                        <div class="info-bar-card" id="portfolio-country-summary" style="display:none;">
+                            <h3 class="info-bar-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                Länderverteilung nach Region
+                            </h3>
+                            <div id="portfolio-cluster-list" class="cluster-list"></div>
+                        </div>
+                    </div><!-- end .portfolio-info-bar -->
+
+                </section>
+
+                <section class="strategy-banner info-banner">
+                    <div class="banner-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                    </div>
+                    <div class="banner-content">
+                        <strong>Gut zu wissen:</strong> Externe Sparraten reduzieren das Risiko. Regelmäßige
+                        Umschichtungen,
+                        Reinvestitionen in Vermögensverwalter und situative Gewinnmitnahmen ("Momentum-Strategie")
+                        optimieren
+                        Ihr Portfolio fortlaufend.
+                    </div>
+                </section>
+
+                <footer class="action-footer"></footer>
+            </div>
+        </main>
+
+        <!-- RIGHT: Mein Portfolio Panel -->
+        <aside class="portfolio-panel" id="portfolio-panel">
+            <div class="panel-header">
+                <div class="panel-header-top">
+                    <h2 class="panel-title">
+                        Mein Portfolio
+                    </h2>
+                    <div class="panel-actions">
+                        <label class="btn-icon" id="import-setup-btn" title="Setup laden (.json)">
+                            <input type="file" id="import-setup-file" accept=".json" style="display:none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        </label>
+                        <button class="btn-icon" id="export-setup-btn" title="Setup speichern (.json)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        </button>
+                        <button class="btn-icon" id="reset-portfolio-btn" title="Portfolio zurücksetzen">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="1 4 1 10 7 10"></polyline>
+                                <path d="M3.51 15a9 9 0 1 0 .49-3.72"></path>
+                            </svg>
+                        </button>
+                        <button class="btn-icon" id="save-portfolio-btn" title="Gewählte Liste als PDF herunterladen">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Allocation summary bar -->
+                <div class="allocation-summary">
+                    <div class="alloc-bar-track">
+                        <div class="alloc-bar-fill" id="alloc-bar-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="alloc-label">Gesamtgewichtung: <span id="alloc-total">0</span>%</div>
+                </div>
+            </div>
+
+            <div class="panel-body" id="panel-body">
+                <!-- Empty state -->
+                <div class="panel-empty" id="panel-empty">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <p>Noch keine Fonds ausgewählt.</p>
+                    <p class="panel-empty-hint">Klicken Sie auf eine Turm-Schicht und wählen Sie Fonds mit <strong>+
+                            Auswählen</strong> aus.</p>
+                </div>
+                <!-- Layer groups will be inserted here by JS -->
+                <div id="panel-layers"></div>
+            </div>
+        </aside>
+
+    </div><!-- end .app-layout -->
+
+    <!-- Modal for showing funds -->
+    <div class="modal-overlay" id="funds-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="header-left">
+                    <h3 id="modal-title">Fonds</h3>
+                    <select id="modal-filter" class="modal-filter" style="display:none;"></select>
+                </div>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <ul class="funds-list" id="modal-funds-list">
+                    <!-- Javascript will populate funds here -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Crawler Modal -->
+    <div id="crawler-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width:520px;">
+            <div class="modal-header">
+                <div class="header-left">
+                    <h3>🌍 Ländergewichtungen aktualisieren</h3>
+                </div>
+                <button class="close-modal" id="crawler-modal-close">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:20px;">
+                <!-- Status: Server nicht erreichbar -->
+                <div id="crawler-no-server" style="display:none;">
+                    <p style="margin-bottom:12px;">Der Crawler-Server läuft noch nicht. Bitte öffnen Sie ein Terminal und starten Sie:</p>
+                    <div style="background:#1e1e2e;border-radius:8px;padding:12px;font-family:monospace;font-size:0.9em;color:#cdd6f4;position:relative;">
+                        <span id="crawler-cmd">python3 crawler_server.py</span>
+                        <button id="copy-cmd-btn" style="position:absolute;right:10px;top:10px;background:rgba(255,255,255,0.1);border:none;color:#cdd6f4;border-radius:4px;padding:3px 9px;cursor:pointer;font-size:0.85em;">📋 Kopieren</button>
+                    </div>
+                    <p style="margin-top:12px;color:#888;font-size:0.88em;">Nach dem Start des Servers: Button erneut klicken.</p>
+                </div>
+                <!-- Status: Bereit -->
+                <div id="crawler-ready" style="display:none;">
+                    <p>✅ Crawler-Server erreichbar. Klicken Sie <strong>Starten</strong>, um alle Fondsgesellschafts-Seiten abzurufen und Ländergewichtungen zu aktualisieren.</p>
+                    <p style="color:#888;font-size:0.88em;margin-top:8px;">⏱ Dauer: ca. 3–5 Minuten für alle Fonds</p>
+                    <button id="crawler-start-btn" class="btn btn-crawler" style="margin-top:16px;width:100%;">
+                        🚀 Crawler starten
+                    </button>
+                </div>
+                <!-- Status: Läuft -->
+                <div id="crawler-running" style="display:none;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                        <div class="crawler-spinner"></div>
+                        <span id="crawler-progress-label">Initialisiere...</span>
+                    </div>
+                    <div style="background:#f0f0f0;border-radius:6px;height:8px;overflow:hidden;">
+                        <div id="crawler-progress-bar" style="height:100%;background:linear-gradient(90deg,#0a7a4d,#1bb57a);width:0%;transition:width 0.5s;"></div>
+                    </div>
+                    <div id="crawler-log" style="margin-top:14px;max-height:220px;overflow-y:auto;font-family:monospace;font-size:0.8em;background:#1e1e2e;color:#cdd6f4;border-radius:6px;padding:10px;"></div>
+                </div>
+                <!-- Status: Fertig -->
+                <div id="crawler-done" style="display:none;">
+                    <p id="crawler-done-msg" style="margin-bottom:12px;"></p>
+                    <p style="color:#888;font-size:0.88em;">Bitte <strong>Seite neu laden</strong> (F5), damit die aktualisierten Ländergewichtungen sichtbar werden.</p>
+                    <button onclick="location.reload()" class="btn btn-primary" style="margin-top:14px;">🔄 Seite neu laden</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Hilfe-Modal / Benutzerhandbuch ── -->
+    <div id="help-modal" class="modal-overlay help-modal-overlay" role="dialog" aria-modal="true" aria-label="Benutzerhandbuch">
+        <div class="help-modal-content">
+            <div class="help-modal-header">
+                <h2 style="margin:0;color:#fff;font-size:1.15rem;display:flex;align-items:center;gap:8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Benutzerhandbuch – Robustes Portfolio V4.3.3.7
+                </h2>
+                <button id="help-modal-close" class="close-modal" aria-label="Schließen">&times;</button>
+            </div>
+            <div class="help-modal-body">
+
+                <div class="help-section">
+                    <h3>Was ist das „Robuste Portfolio"?</h3>
+                    <p>Das <strong>Robuste Portfolio</strong> ist ein interaktives Planungstool für die strukturierte Zusammenstellung eines individuellen Anlageportfolios. Es funktioniert vollständig im Browser – offline, ohne Internetverbindung – und speichert das Portfolio automatisch lokal.</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>🖥️ Erste Schritte</h3>
+                    <ol>
+                        <li><strong>Gesamtvermögen eingeben</strong> – Im Bereich „Anlageplanung" (rechts neben dem Turm) den Betrag eingeben und mit <kbd>Enter</kbd> bestätigen. Optional: monatliche Sparrate eingeben.</li>
+                        <li><strong>Fonds auswählen</strong> – Auf eine farbige Schicht im Turm klicken, Betrag pro Fonds eingeben, <strong>+ Auswählen</strong> klicken.</li>
+                        <li><strong>Portfolio verwalten</strong> – Im Panel rechts alle gewählten Fonds sehen; mit <strong>✕</strong> entfernen.</li>
+                        <li><strong>Zeitphasen (optional)</strong> – Zeitphasen-Buttons oben anklicken, um passende Schichten hervorzuheben.</li>
+                    </ol>
+                    <p class="help-tip">💡 Das 🌍-Symbol neben einem Fondsnamen zeigt beim Darüberfahren die <strong>Top-5-Ländergewichtungen</strong> dieses Fonds – inklusive Aufschlüsselung nach <strong style="color:#60a5fa;">Aktien</strong> (blau) oder <strong style="color:#86efac;">Anleihen</strong> (grün) je nach Fondstyp.</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>📊 Portfolio-Info-Leiste (unterhalb des Turms)</h3>
+                    <table class="help-table">
+                        <thead><tr><th>Bereich</th><th>Funktion</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Verteilung nach Schicht</strong></td><td>Zeigt, wie viel € je Investmentschicht eingeplant ist – in Turm-Reihenfolge (unten → oben)</td></tr>
+                            <tr><td><strong>Länderverteilung nach Region</strong></td><td>Geographische Aufteilung des Portfolios in 6 Regionen, normalisiert auf 100% – mit Aktien/Anleihen-Unterzeile pro Cluster</td></tr>
+                        </tbody>
+                    </table>
+                    <p class="help-tip">💡 Fahren Sie mit der Maus über einen Regions-Cluster, um die <strong>Top-5-Länder</strong> zu sehen – mit Gesamtanteil und Unterzeile für <strong style="color:#60a5fa;">Aktien</strong> / <strong style="color:#86efac;">Anleihen</strong>.</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>🗺️ Regionale Cluster (6 Regionen)</h3>
+                    <table class="help-table">
+                        <thead><tr><th>Region</th><th>Enthält</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="help-dot" style="background:#1e40af"></span><strong>Nordamerika</strong></td><td>USA, Kanada, Mexiko</td></tr>
+                            <tr><td><span class="help-dot" style="background:#047857"></span><strong>Europa</strong></td><td>DE, FR, GB, CH, NL, AT, BE, SE, NO, DK, FI, ES, IT, PT, PL, CZ, HU, RO, GR, Baltikum …</td></tr>
+                            <tr><td><span class="help-dot" style="background:#7c3aed"></span><strong>Schwellenländer</strong></td><td>China, Indien, Brasilien, Türkei, Südafrika, Ägypten, Emerging Markets …</td></tr>
+                            <tr><td><span class="help-dot" style="background:#0e7490"></span><strong>Pacific</strong></td><td>Japan, Australien, Neuseeland, Südkorea, Taiwan, Hongkong, Singapur, Thailand …</td></tr>
+                            <tr><td><span class="help-dot" style="background:#64748b"></span><strong>Sonstige ETF</strong></td><td>Irland, Luxemburg (Fondsdomizil-Proxy in Gewichtungen)</td></tr>
+                            <tr><td><span class="help-dot" style="background:#94a3b8"></span><strong>Sonstige</strong></td><td>„global", „Asien", „sonstige", Frontier Markets (zu uneindeutig für eine klare Region)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="help-section">
+                    <h3>🎯 Fondsklassifizierung (neu ab V4.3.3.7)</h3>
+                    <p>Für die Aktien/Anleihen-Aufschlüsselung wird jeder Fonds automatisch anhand seines Typs klassifiziert:</p>
+                    <table class="help-table">
+                        <thead><tr><th>Klassifizierung</th><th>Fondstypen</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="help-dot" style="background:#1e3a8a"></span><strong style="color:#60a5fa;">Aktien</strong></td><td>EB Aktien, WB Aktien, EB Rohstoffe, EB Edelmetalle</td></tr>
+                            <tr><td><span class="help-dot" style="background:#14532d"></span><strong style="color:#86efac;">Anleihen</strong></td><td>EB Anleihen, WB Anleihen, Anleihen flexibel, Geldmarkt, Renten, EB Anleihen (Kasse)</td></tr>
+                            <tr><td><span class="help-dot" style="background:#334155"></span><strong>Gemischt</strong></td><td>VV defensiv, VV ausgewogen, VV dynamisch, WB Aktien/Anleihen &mdash; fließen nur in Gesamtanteil</td></tr>
+                        </tbody>
+                    </table>
+                    <p class="help-tip">ℹ️ Bei Mischfonds ist die interne Aktien-/Anleihenquote variabel und wird daher <strong>nicht aufgeteilt</strong>.</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>📋 Schichten-Reihenfolge im Turm (unten → oben)</h3>
+                    <ol>
+                        <li>Tagesgeld</li>
+                        <li>Kapitalreservefonds</li>
+                        <li>Defensive Vermögensverwalter</li>
+                        <li>Ausgewogene Vermögensverwalter</li>
+                        <li>Dynamische Vermögensverwalter</li>
+                        <li>Märkte</li>
+                        <li>Spezialitäten / Themen</li>
+                    </ol>
+                </div>
+
+                <div class="help-section">
+                    <h3>🗄️ Portfolio speichern &amp; wiederherstellen</h3>
+                    <table class="help-table">
+                        <thead><tr><th>Symbol (oben in „Mein Portfolio")</th><th>Funktion</th></tr></thead>
+                        <tbody>
+                            <tr><td>💾 <strong>Diskette</strong></td><td>Portfolio als PDF exportieren (neuer Tab)</td></tr>
+                            <tr><td>⬇ <strong>Pfeil unten</strong></td><td>Portfolio als JSON-Datei speichern</td></tr>
+                            <tr><td>⬆ <strong>Pfeil oben</strong></td><td>Gespeicherte JSON-Datei laden &amp; Portfolio wiederherstellen</td></tr>
+                            <tr><td>↺ <strong>Reset</strong></td><td>Gesamtes Portfolio zurücksetzen</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="help-section">
+                    <h3>⚙️ Technische Hinweise</h3>
+                    <ul>
+                        <li>Läuft vollständig <strong>lokal im Browser</strong> – keine Serververbindung nötig</li>
+                        <li>Portfolio wird automatisch im <strong>Browser-LocalStorage</strong> gespeichert</li>
+                        <li>Bei Software-Updates: <kbd>Cmd+Shift+R</kbd> (Hard-Reload) ausführen</li>
+                        <li>Empfohlene Browser: <strong>Google Chrome</strong> oder <strong>Safari</strong> (aktuellste Version)</li>
+                        <li>PDF-Export: Falls Popup-Blocker aktiv ist, Popups einmalig erlauben</li>
+                    </ul>
+                </div>
+
+                <div class="help-footer">
+                    Version 4.3.3.7 &nbsp;·&nbsp; April 2026
+                </div>
+
+            </div><!-- end .help-modal-body -->
+        </div>
+    </div><!-- end #help-modal -->
+
+    <script src="fund_data.js"></script>
+    <script src="app_v4.3.3.7.js"></script>
+
+</body>
+
+</html>
